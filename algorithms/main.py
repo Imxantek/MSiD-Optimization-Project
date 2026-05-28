@@ -6,9 +6,12 @@ import SA
 import ACO
 
 SA_RUNS  = 10
+SA_TEMP = 1000.0
+SA_COOL_RATE = 0.999
+SA_MIN_TEMP = 0.1
 ACO_RUNS = 10
-ACO_ANTS = 30
-ACO_ITER = 1000
+ACO_ANTS = 12
+ACO_ITER = 10000
 ACO_EVAP = 0.1
 
 # --- SA ---
@@ -16,8 +19,9 @@ ACO_EVAP = 0.1
 def run_sa():
     scores, times = [], []
     for _ in range(SA_RUNS):
+        problem.cache = {}
         t0 = time.perf_counter()
-        _, score = SA.simulated_annealing(1000.0, 0.999, 0.1)
+        _, score = SA.simulated_annealing(SA_TEMP, SA_COOL_RATE, SA_MIN_TEMP)
         times.append(time.perf_counter() - t0)
         scores.append(score)
     return scores, times
@@ -27,6 +31,7 @@ def run_sa():
 def run_aco():
     scores, times = [], []
     for _ in range(ACO_RUNS):
+        problem.cache = {}
         ACO.winner = []
         ACO.best_score = sys.maxsize
         t0 = time.perf_counter()
@@ -59,9 +64,11 @@ if __name__ == "__main__":
     print(f"Problem załadowany: n={problem.n}")
 
     print("\n=== Symulowane wyżarzanie ===")
+    print(f"  runs={SA_RUNS}, temp={SA_TEMP}, cooling_rate={SA_COOL_RATE}, min_temp={SA_MIN_TEMP}")
     sa_scores, sa_times = run_sa()
     print_stats("SA", sa_scores, sa_times)
 
     print("\n=== Algorytm mrówkowy ===")
+    print(f"  runs={ACO_RUNS}, ants={ACO_ANTS}, iterations={ACO_ITER}, evap_rate={ACO_EVAP}")
     aco_scores, aco_times = run_aco()
     print_stats("ACO", aco_scores, aco_times)
