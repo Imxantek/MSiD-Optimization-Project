@@ -5,14 +5,18 @@ import problem
 import SA
 import ACO
 
+# --- SA PARAMETERS ---
 SA_RUNS  = 10
 SA_TEMP = 1000.0
 SA_COOL_RATE = 0.999
 SA_MIN_TEMP = 0.1
+
+# --- ACO PARAMETERS ---
 ACO_RUNS = 10
-ACO_ANTS = 12
-ACO_ITER = 10000
+ACO_ANTS = 60
+ACO_ITER = 100
 ACO_EVAP = 0.1
+ELITIST=True
 
 # --- SA ---
 
@@ -35,7 +39,7 @@ def run_aco():
         ACO.winner = []
         ACO.best_score = sys.maxsize
         t0 = time.perf_counter()
-        ACO.start_simulation(problem.n, ACO_ANTS, ACO_ITER, ACO_EVAP)
+        ACO.start_simulation(problem.n, ACO_ANTS, ACO_ITER, ACO_EVAP, ELITIST)
         ACO.run_simulation()
         times.append(time.perf_counter() - t0)
         scores.append(ACO.best_score)
@@ -51,24 +55,24 @@ def print_stats(name, scores, times):
     t_avg = statistics.mean(times)
 
     print(f"\n  {name}")
-    print(f"    Najlepszy wynik : {best}")
-    print(f"    Średni wynik    : {mean:.0f}")
-    print(f"    Odch. std       : {std:.1f}  (CV = {cv:.1f}%)")
-    print(f"    Czas (średni)   : {t_avg:.2f} s")
-    print(f"    Wyniki          : {scores}")
+    print(f"    Best score : {best}")
+    print(f"    Average score    : {mean:.0f}")
+    print(f"    Std. deviation       : {std:.1f}  (CV = {cv:.1f}%)")
+    print(f"    Time (average)   : {t_avg:.2f} s")
+    print(f"    Scores          : {scores}")
 
 # --- Main ---
 
 if __name__ == "__main__":
     problem.load_data()
-    print(f"Problem załadowany: n={problem.n}")
+    print(f"Problem loaded: n={problem.n}")
 
-    print("\n=== Symulowane wyżarzanie ===")
+    print("\n=== Simulated Annealing ===")
     print(f"  runs={SA_RUNS}, temp={SA_TEMP}, cooling_rate={SA_COOL_RATE}, min_temp={SA_MIN_TEMP}")
     sa_scores, sa_times = run_sa()
     print_stats("SA", sa_scores, sa_times)
 
-    print("\n=== Algorytm mrówkowy ===")
+    print("\n=== Ant Colony Optimization ===")
     print(f"  runs={ACO_RUNS}, ants={ACO_ANTS}, iterations={ACO_ITER}, evap_rate={ACO_EVAP}")
     aco_scores, aco_times = run_aco()
     print_stats("ACO", aco_scores, aco_times)

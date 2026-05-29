@@ -1,7 +1,6 @@
 import sys
 import random
 import problem
-problem.load_data()
 
 size: int
 num : int
@@ -11,22 +10,21 @@ p_matrix : list[list[float]]
 winner: list[int] = list()
 best_score : int = sys.maxsize
 retention_rate: float = 1.0
+elitist: bool = False
 
-def start_simulation(matrix_size, ant_num, iterations, rate):
-
-    global size, num, it, evap_rate, p_matrix, retention_rate
+def start_simulation(matrix_size, ant_num, iterations, rate, elitism=False):
+    global size, num, it, evap_rate, p_matrix, retention_rate, elitist
     size = matrix_size
     num = ant_num
     it = iterations
     evap_rate = rate
     p_matrix = list()
     retention_rate = 1.0-evap_rate
+    elitist = elitism
 
     for i in range(size):
-        row = [1.0 for x in range(size)]
+        row = [1.0 for _ in range(size)]
         p_matrix.append(row)
-    # for i in p_matrix:
-    #     print(i)
 
 def find_idx(row: int, avb_locations: set[int]) -> int:
     s=0.0
@@ -62,7 +60,7 @@ def build_permutation() -> list[int]:
     return permutation
 
 def simulate():
-    global winner, best_score
+    global winner, best_score, elitist
     permutations : list[tuple[list[int], int]] = list()
 
     for i in range(num):
@@ -74,12 +72,28 @@ def simulate():
             best_score = score
             winner = current
 
-        # print("current: ", current, " score: ", score)
-
     for i in range(size):
         for j in range(size):
             p_matrix[i][j]*=retention_rate
 
+    if elitist:
+        elitist_simulation(permutations)
+    else:
+        standard_simulation(permutations)
+
+def elitist_simulation(permutations: list[tuple[list[int], int]]):
+    permutations = sorted(permutations, key=lambda x: x[1])
+    rewards = [1.5, 0.66, 0.33]
+    for i in range(3):
+        perm = permutations[i][0]
+
+        for j in range(len(perm)):
+            p_matrix[j][perm[j]] += rewards[i]
+
+    for i in range(len(winner)):
+        p_matrix[i][winner[i]]+=1.0
+
+def standard_simulation(permutations: list[tuple[list[int], int]]):
     for tup in permutations:
         perm=tup[0]
         score=tup[1]
@@ -87,18 +101,6 @@ def simulate():
         for i in range(len(perm)):
             p_matrix[i][perm[i]]+=best_score/score
 
-    # print("Pheromones Matrix: ")
-    # for row in p_matrix:
-    #     print(row)
-
 def run_simulation():
     for i in range(it):
         simulate()
-
-if __name__ == '__main__':
-    start_simulation(problem.n,12,35000,0.1)
-    run_simulation()
-    print("Best permutation: ")
-    print(winner)
-    print("Score: ")
-    print(best_score)
