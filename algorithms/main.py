@@ -7,7 +7,7 @@ import ACO
 
 # --- SA PARAMETERS ---
 SA_RUNS  = 10
-SA_TEMP = 1000.0
+SA_TEMP = 2500.0
 SA_COOL_RATE = 0.999
 SA_MIN_TEMP = 0.1
 
@@ -39,7 +39,20 @@ def run_aco():
         ACO.winner = []
         ACO.best_score = sys.maxsize
         t0 = time.perf_counter()
-        ACO.start_simulation(problem.n, ACO_ANTS, ACO_ITER, ACO_EVAP, ELITIST)
+        ACO.start_simulation(problem.n, ACO_ANTS, ACO_ITER, ACO_EVAP, False)
+        ACO.run_simulation()
+        times.append(time.perf_counter() - t0)
+        scores.append(ACO.best_score)
+    return scores, times
+
+def run_aco_elitism():
+    scores, times = [], []
+    for _ in range(ACO_RUNS):
+        problem.cache = {}
+        ACO.winner = []
+        ACO.best_score = sys.maxsize
+        t0 = time.perf_counter()
+        ACO.start_simulation(problem.n, ACO_ANTS, ACO_ITER, ACO_EVAP, True)
         ACO.run_simulation()
         times.append(time.perf_counter() - t0)
         scores.append(ACO.best_score)
@@ -57,7 +70,7 @@ def print_stats(name, scores, times):
     print(f"\n  {name}")
     print(f"    Best score : {best}")
     print(f"    Average score    : {mean:.0f}")
-    print(f"    Std. deviation       : {std:.1f}  (CV = {cv:.1f}%)")
+    print(f"    Std. deviation       : {std:.1f}  (CV = {cv:.2f}%)")
     print(f"    Time (average)   : {t_avg:.2f} s")
     print(f"    Scores          : {scores}")
 
@@ -76,3 +89,8 @@ if __name__ == "__main__":
     print(f"  runs={ACO_RUNS}, ants={ACO_ANTS}, iterations={ACO_ITER}, evap_rate={ACO_EVAP}")
     aco_scores, aco_times = run_aco()
     print_stats("ACO", aco_scores, aco_times)
+
+    print("\n=== Ant Colony Optimization with Elitism ===")
+    print(f"  runs={ACO_RUNS}, ants={ACO_ANTS}, iterations={ACO_ITER}, evap_rate={ACO_EVAP}")
+    aco_scores, aco_times = run_aco_elitism()
+    print_stats("ACO with elitism", aco_scores, aco_times)
